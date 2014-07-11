@@ -7,7 +7,7 @@ rrdFile = '/root/data/temp.rrd'
 
 
 def createRRD():
-    ret = rrdtool.create(rrdFile, "--step", "300", "--start", '1404780978',
+    ret = rrdtool.create(rrdFile, "--step", "300", "--start", '1405042382',
             "DS:temperature:GAUGE:60:50:90",
             "DS:pressure:GAUGE:60:87000:108570",
             # Every minute for a year
