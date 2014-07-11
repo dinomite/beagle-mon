@@ -25,7 +25,7 @@ def createRRD():
 def readAndStoreData():
     temp_in_fahrenheit = sensor.read_temperature() * 1.8 + 32.0
     pressure = sensor.read_pressure()
-    update = 'N:{0:0.2f}:{0:0.2f}'.format(temp_in_fahrenheit, pressure)
+    update = 'N:{0:0.2f}:{1:0.2f}'.format(temp_in_fahrenheit, pressure)
 
     ret = rrdtool.update(rrdFile, update);
     if ret:
