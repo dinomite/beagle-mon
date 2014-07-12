@@ -36,8 +36,8 @@ def readAndStoreData():
 
 #createRRD()
 
-readAndStoreData()
+#readAndStoreData()
 
-#while 1:
-    #readAndStoreData()
-    #time.sleep(60)
+while 1:
+    readAndStoreData()
+    time.sleep(55)
