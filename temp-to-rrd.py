@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+# coding=utf8
 import sys
 import time
 import rrdtool
 import Adafruit_BMP.BMP085 as BMP085
 from w1thermsensor import W1ThermSensor
 
+rrd_dir = '/home/dinomite/data/'
 sensors = {
             'desk': BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES),
             'outside': W1ThermSensor(W1ThermSensor.THERM_SENSOR_DS18B20, "000005aba36c"),
@@ -13,8 +16,7 @@ sensors = {
 #for sensor in W1ThermSensor.get_available_sensors():
     #print("Sensor %s has temperature %.2f°F" % (sensor.id, sensor.get_temperature(W1ThermSensor.DEGREES_F)))
 
-sensor = BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES)
-rrdFile = '/home/dinomite/data/temp.rrd'
+#sensor = BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES)
 
 
 def createRRD():
@@ -30,16 +32,20 @@ def createRRD():
             # Max annual temperature
             "RRA:MAX:0.5:1440:365")
     if ret:
-        print rrdtool.error()
+        print(rrdtool.error())
 
 
 def readAndStoreAll():
-    for name, sensor in sensors.iteritems():
+    for name, sensor in sensors.items():
+        print("Sensor name: " + name)
         #if isinstance(sensor, W1ThermSensor:
         if type(sensor) is W1ThermSensor:
-            print "It's a W1ThermSensor"
-        elif type(sensor) is BMP085:
-            print "It's a BMP085"
+            print("Sensor %s has temperature %.2f°F" % (sensor.id, sensor.get_temperature(W1ThermSensor.DEGREES_F)))
+        else:
+            #elif type(sensor) is BMP085:
+            temp_in_fahrenheit = sensor.read_temperature() * 1.8 + 32.0
+            pressure = sensor.read_pressure()
+            print("Temp: %.2f  Pressure: %.2f°F" % (temp_in_fahrenheit, pressure))
 
 
 def readAndStoreData():
@@ -50,7 +56,7 @@ def readAndStoreData():
 
     ret = rrdtool.update(rrdFile, update);
     if ret:
-        print rrdtool.error()
+        print(rrdtool.error())
 
 
 #createRRD()
@@ -58,5 +64,6 @@ def readAndStoreData():
 #readAndStoreData()
 
 while 1:
-    readAndStoreData()
+    #readAndStoreData()
+    readAndStoreAll()
     time.sleep(55)
