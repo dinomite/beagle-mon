@@ -2,6 +2,16 @@ import sys
 import time
 import rrdtool
 import Adafruit_BMP.BMP085 as BMP085
+from w1thermsensor import W1ThermSensor
+
+sensors = {
+            'desk': BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES),
+            'outside': W1ThermSensor(W1ThermSensor.THERM_SENSOR_DS18B20, "000005aba36c"),
+            'vent': W1ThermSensor(W1ThermSensor.THERM_SENSOR_DS18B20, "000005ab8e9c")
+        }
+
+#for sensor in W1ThermSensor.get_available_sensors():
+    #print("Sensor %s has temperature %.2f°F" % (sensor.id, sensor.get_temperature(W1ThermSensor.DEGREES_F)))
 
 sensor = BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES)
 rrdFile = '/home/dinomite/data/temp.rrd'
@@ -21,6 +31,15 @@ def createRRD():
             "RRA:MAX:0.5:1440:365")
     if ret:
         print rrdtool.error()
+
+
+def readAndStoreAll():
+    for name, sensor in sensors.iteritems():
+        #if isinstance(sensor, W1ThermSensor:
+        if type(sensor) is W1ThermSensor:
+            print "It's a W1ThermSensor"
+        elif type(sensor) is BMP085:
+            print "It's a BMP085"
 
 
 def readAndStoreData():
