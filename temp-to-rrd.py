@@ -4,7 +4,7 @@ import rrdtool
 import Adafruit_BMP.BMP085 as BMP085
 
 sensor = BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES)
-rrdFile = '/root/data/temp.rrd'
+rrdFile = '/home/dinomite/data/temp.rrd'
 
 
 def createRRD():
