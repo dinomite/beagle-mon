@@ -12,6 +12,7 @@ sensors = {
             'vent': W1ThermSensor(W1ThermSensor.THERM_SENSOR_DS18B20, "000005ab8e9c")
         }
 
+
 def create_desk_rrd():
     ret = rrdtool.create(rrd_dir + "desk.rrd", "--step", "60", "--start", '1405042382',
             "DS:temperature:GAUGE:60:50:90",
@@ -26,6 +27,7 @@ def create_desk_rrd():
             "RRA:MAX:0.5:1440:365")
     if ret:
         print("Error creating RRD: " + rrdtool.error())
+
 
 def create_1w_rrd(filename):
     ret = rrdtool.create(rrd_dir + filename + ".rrd", "--step", "60", "--start", '1405042382',
@@ -45,6 +47,7 @@ def create_1w_rrd(filename):
 # create_1w_rrd("outside")
 # create_1w_rrd("vent")
 # exit(0)
+
 
 def read_and_store_all():
     for name, sensor in sensors.items():
