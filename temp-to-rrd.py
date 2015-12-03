@@ -38,25 +38,18 @@ def createRRD():
 def readAndStoreAll():
     for name, sensor in sensors.items():
         print("Sensor name: " + name)
-        #if isinstance(sensor, W1ThermSensor:
+
         if type(sensor) is W1ThermSensor:
             print("Sensor %s has temperature %.2f°F" % (sensor.id, sensor.get_temperature(W1ThermSensor.DEGREES_F)))
         else:
-            #elif type(sensor) is BMP085:
             temp_in_fahrenheit = sensor.read_temperature() * 1.8 + 32.0
             pressure = sensor.read_pressure()
+            update = time.strftime('%s') + ':{0:0.2f}:{1:0.2f}'.format(temp_in_fahrenheit, pressure)
             print("Temp: %.2f  Pressure: %.2f°F" % (temp_in_fahrenheit, pressure))
 
-
-def readAndStoreData():
-    temp_in_fahrenheit = sensor.read_temperature() * 1.8 + 32.0
-    pressure = sensor.read_pressure()
-    update = time.strftime('%s') + ':{0:0.2f}:{1:0.2f}'.format(temp_in_fahrenheit, pressure)
-    #print time.strftime("%Y-%m-%d %H:%M") + '   ' + update
-
-    ret = rrdtool.update(rrdFile, update);
-    if ret:
-        print(rrdtool.error())
+        #ret = rrdtool.update(rrdFile, update);
+        #if ret:
+            #print(rrdtool.error())
 
 
 #createRRD()
