@@ -13,25 +13,13 @@ sensors = {
         }
 
 
-def create_desk_rrd():
-    ret = rrdtool.create(rrd_dir + "desk.rrd", "--step", "60", "--start", '1405042382',
-            "DS:temperature:GAUGE:60:50:90",
-            "DS:pressure:GAUGE:60:87000:108570",
-            # Every minute for a year
-            "RRA:AVERAGE:0.5:1:525600",
-            # Hourly average, 5 years
-            "RRA:AVERAGE:0.5:60:43800",
-            # Min annual temperature
-            "RRA:MIN:0.5:1440:365",
-            # Max annual temperature
-            "RRA:MAX:0.5:1440:365")
-    if ret:
-        print("Error creating RRD: " + rrdtool.error())
-
-
-def create_1w_rrd(filename):
-    ret = rrdtool.create(rrd_dir + filename + ".rrd", "--step", "60", "--start", '1405042382',
-                         "DS:temperature:GAUGE:60:50:90",
+# rrdtool.create() is supposed to be able to take an array of data sources.
+# Instead, it segfaults
+def create_rrd(filename, data_source):
+    ret = rrdtool.create(rrd_dir + filename,
+                         "--step", "60",
+                         "--start", time.strftime('%s'),
+                         data_source,
                          # Every minute for a year
                          "RRA:AVERAGE:0.5:1:525600",
                          # Hourly average, 5 years
@@ -43,9 +31,10 @@ def create_1w_rrd(filename):
     if ret:
         print("Error creating RRD: " + rrdtool.error())
 
-# create_desk_rrd()
-# create_1w_rrd("outside")
-# create_1w_rrd("vent")
+
+# create_rrd('desk', ["DS:temperature:GAUGE:60:50:90", "DS:pressure:GAUGE:60:87000:108570"])
+# create_rrd('outside', "DS:temperature:GAUGE:60:-25:125")
+# create_rrd('vent', "DS:temperature:GAUGE:60:35:120")
 # exit(0)
 
 
@@ -67,6 +56,7 @@ def read_and_store_all():
         ret = rrdtool.update(rrd_file, update)
         if ret:
             print("Error writing RRD: " + rrdtool.error())
+
 
 while 1:
     read_and_store_all()
