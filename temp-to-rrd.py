@@ -5,7 +5,7 @@ import logging
 
 import rrdtool
 import Adafruit_BMP.BMP085 as BMP085
-from w1thermsensor import W1ThermSensor
+from w1thermsensor import W1ThermSensor,SensorNotReadyError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ def read_and_store_all():
             try:
                 temperature = sensor.get_temperature(W1ThermSensor.DEGREES_F)
             except SensorNotReadyError as e:
-                logger.warn("Sesnor " + name + "(" + sensor.id + ")" " not ready to read")
+                logger.warn("Sesnor " + name + " not ready to read", e)
 
             update = time.strftime('%s') + ':{0:0.2f}'.format(temperature)
             logger.debug("Sensor %s has temperature %.2f°F" % (sensor.id, temperature))
