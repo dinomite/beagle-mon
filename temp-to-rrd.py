@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # coding=utf8
 import time
+import logging
+
 import rrdtool
 import Adafruit_BMP.BMP085 as BMP085
 from w1thermsensor import W1ThermSensor
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 rrd_dir = '/home/dinomite/data/'
 sensors = {
@@ -27,7 +32,8 @@ def create_rrd(filename, data_source):
                          # Max annual temperature
                          "RRA:MAX:0.5:1440:365")
     if ret:
-        print("Error creating RRD: " + rrdtool.error())
+        logger.error("Error creating RRD: " + rrdtool.error())
+        exit(1)
 
 
 # rrdtool.create() is supposed to be able to take an array of data sources.
@@ -53,22 +59,26 @@ def create_rrd(filename, data_source):
 
 def read_and_store_all():
     for name, sensor in sensors.items():
-        # print("Sensor name: " + name)
+        logger.debug("Sensor name: " + name)
 
         if type(sensor) is W1ThermSensor:
-            temperature = sensor.get_temperature(W1ThermSensor.DEGREES_F)
+            try:
+                temperature = sensor.get_temperature(W1ThermSensor.DEGREES_F)
+            except SensorNotReadyError as e:
+                logger.warn("Sesnor " + name + "(" + sensor.id + ")" " not ready to read")
+
             update = time.strftime('%s') + ':{0:0.2f}'.format(temperature)
-            # print("Sensor %s has temperature %.2f°F" % (sensor.id, temperature))
+            logger.debug("Sensor %s has temperature %.2f°F" % (sensor.id, temperature))
         else:
             temperature = sensor.read_temperature() * 1.8 + 32.0
             pressure = sensor.read_pressure()
             update = time.strftime('%s') + ':{0:0.2f}:{1:0.2f}'.format(temperature, pressure)
-            # print("Temp: %.2f  Pressure: %.2f°F" % (temperature, pressure))
+            logger.debug("Temp: %.2f  Pressure: %.2f°F" % (temperature, pressure))
 
         rrd_file = rrd_dir + name + ".rrd"
         ret = rrdtool.update(rrd_file, update)
         if ret:
-            print("Error writing RRD: " + rrdtool.error())
+            logger.warn("Couldn't write to RRD: " + rrdtool.error())
 
 
 while 1:
