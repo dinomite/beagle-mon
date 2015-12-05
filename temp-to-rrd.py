@@ -37,11 +37,11 @@ def read_and_store_all():
         if type(sensor) is W1ThermSensor:
             try:
                 temperature = sensor.get_temperature(W1ThermSensor.DEGREES_F)
+                update = time.strftime('%s') + ':{0:0.2f}'.format(temperature)
+                logger.debug("Sensor %s has temperature %.2f°F" % (sensor.id, temperature))
             except SensorNotReadyError as e:
-                logger.warn("Sesnor " + name + " not ready to read", e)
-
-            update = time.strftime('%s') + ':{0:0.2f}'.format(temperature)
-            logger.debug("Sensor %s has temperature %.2f°F" % (sensor.id, temperature))
+                logger.warn("Sensor " + name + " not ready to read", e)
+                continue
         else:
             temperature = sensor.read_temperature() * 1.8 + 32.0
             pressure = sensor.read_pressure()
