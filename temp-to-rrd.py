@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 rrd_dir = '/home/dinomite/data/'
+bmp085_correction = -12.5
 
 
 def get_1w_sensor(sensor_id):
@@ -21,13 +22,8 @@ def get_1w_sensor(sensor_id):
         exit(1)
 
 
-logger.debug("Acquiring sensors")
-sensors = {
-    'desk': BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES),
-    'outside': get_1w_sensor("000005aba36c"),
-    'vent': get_1w_sensor("000005ab8e9c")
-}
-logger.debug("Sensor handles created")
+def convert_celsius_to_fahrenheit(celsius):
+    return celsius * 1.8 + 32.0
 
 
 def read_and_store_all():
@@ -43,7 +39,7 @@ def read_and_store_all():
                 logger.warn("Sensor " + name + " not ready to read", e)
                 continue
         else:
-            temperature = sensor.read_temperature() * 1.8 + 32.0
+            temperature = convert_celsius_to_fahrenheit(sensor.read_temperature()) + bmp085_correction
             pressure = sensor.read_pressure()
             update = time.strftime('%s') + ':{0:0.2f}:{1:0.2f}'.format(temperature, pressure)
             logger.debug("Temp: %.2f  Pressure: %.2f°F" % (temperature, pressure))
@@ -52,6 +48,15 @@ def read_and_store_all():
         ret = rrdtool.update(rrd_file, update)
         if ret:
             logger.warn("Couldn't write to RRD: " + rrdtool.error())
+
+
+logger.debug("Acquiring sensors")
+sensors = {
+    'desk': BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES),
+    'outside': get_1w_sensor("000005aba36c"),
+    'vent': get_1w_sensor("000005ab8e9c")
+}
+logger.debug("Sensor handles created")
 
 
 logger.info("Beginning monitoring")
