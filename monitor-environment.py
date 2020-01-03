@@ -68,14 +68,14 @@ def read_and_store_all():
             try:
                 temperature = round(sensor.get_temperature(W1ThermSensor.DEGREES_F))
                 pressure = None
-                logger.debug("Sensor {} temperature: {}°F".format(sensor.id, temperature))
+                logger.info("{} ({}) temperature: {}°F".format(name, sensor.id, temperature))
             except SensorNotReadyError as e:
                 logger.warn("Sensor " + name + " not ready to read", e)
                 continue
         else:
             temperature = round(convert_celsius_to_fahrenheit(sensor.read_temperature()) + BMP085_CORRECTION)
             pressure = round(sensor.read_pressure())
-            logger.debug("temperature: {}°F  pressure: {}Pa".format(temperature, pressure))
+            logger.info("{} (BMP085) temperature: {}°F  pressure: {}Pa".format(name, temperature, pressure))
 
         send_to_emoncms(name, temperature, pressure)
         write_to_rrd(name, temperature, pressure)
