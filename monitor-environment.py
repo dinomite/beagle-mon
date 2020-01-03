@@ -39,9 +39,10 @@ def write_to_rrd(name, temperature, pressure=None):
     value = time.strftime('%s') + ':{}'.format(temperature)
     if pressure:
         value += ':{}'.format(pressure)
+    logger.debug("RRD update: " + value)
 
     rrd_file = RRD_DIR + name + ".rrd"
-    ret = rrdtool.update(rrd_file, value )
+    ret = rrdtool.update(rrd_file, value)
     if ret:
         logger.warn("Couldn't write to RRD: " + rrdtool.error())
 
