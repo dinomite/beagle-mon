@@ -12,13 +12,13 @@ from w1thermsensor import W1ThermSensor, SensorNotReadyError, NoSensorFoundError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
 
 RRD_DIR = '/home/dinomite/data/'
 
 EMONCMS_HOST = "emon.dinomite.net"
 EMONCMS_PORT = 443
-EMONCMS_PATH = "/input/post?node=temperature&apikey=" + os.environ['EMONCMS_API_KEY']
+EMONCMS_PATH = "/input/post?node=environment&apikey=" + os.environ['EMONCMS_API_KEY']
 
 BMP085_CORRECTION = -12.5
 
@@ -35,17 +35,25 @@ def convert_celsius_to_fahrenheit(celsius):
     return celsius * 1.8 + 32.0
 
 
-def write_to_rrd(name, value):
+def write_to_rrd(name, temperature, pressure=None):
+    value = time.strftime('%s') + ':{}'.format(temperature)
+    if pressure:
+        value += ':{}'.format(pressure)
+
     rrd_file = RRD_DIR + name + ".rrd"
     ret = rrdtool.update(rrd_file, value )
     if ret:
         logger.warn("Couldn't write to RRD: " + rrdtool.error())
 
-def send_to_emoncms(name, temperature):
-    path = EMONCMS_PATH + "&fulljson={\"" + name + "_temperature\":" + "{:.1f}".format(temperature) + "}"
-    logger.debug("Path: " + path)
+def send_to_emoncms(name, temperature, pressure=None):
+    value = '&fulljson={"' + name + '_temperature":' + str(temperature)
+    if pressure:
+        value += ',"' + name + '_pressure":' + str(pressure)
+    value += "}"
+    logger.debug("Value: " + value)
+
     connection = http.client.HTTPSConnection(EMONCMS_HOST, EMONCMS_PORT)
-    connection.request("GET", path)
+    connection.request("GET", EMONCMS_PATH + value)
     response = connection.getresponse()
     if response.status != 200:
         logger.warn("Bad response status: " + response.status)
@@ -57,20 +65,19 @@ def read_and_store_all():
 
         if type(sensor) is W1ThermSensor:
             try:
-                temperature = sensor.get_temperature(W1ThermSensor.DEGREES_F)
-                value = time.strftime('%s') + ':{0:0.2f}'.format(temperature)
-                logger.debug("Sensor %s has temperature %.2f°F" % (sensor.id, temperature))
+                temperature = round(sensor.get_temperature(W1ThermSensor.DEGREES_F))
+                pressure = None
+                logger.debug("Sensor {} temperature: {}°F".format(sensor.id, temperature))
             except SensorNotReadyError as e:
                 logger.warn("Sensor " + name + " not ready to read", e)
                 continue
         else:
-            temperature = convert_celsius_to_fahrenheit(sensor.read_temperature()) + BMP085_CORRECTION
-            pressure = sensor.read_pressure()
-            value = time.strftime('%s') + ':{0:0.2f}:{1:0.2f}'.format(temperature, pressure)
-            logger.debug("Temp: %.2f  Pressure: %.2f°F" % (temperature, pressure))
+            temperature = round(convert_celsius_to_fahrenheit(sensor.read_temperature()) + BMP085_CORRECTION)
+            pressure = round(sensor.read_pressure())
+            logger.debug("temperature: {}°F  pressure: {}Pa".format(name, temperature, pressure))
 
-        write_to_rrd(name, value)
-        send_to_emoncms(name, temperature)
+        send_to_emoncms(name, temperature, pressure)
+        write_to_rrd(name, temperature, pressure)
 
 
 logger.debug("Acquiring sensors")
