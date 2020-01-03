@@ -75,7 +75,7 @@ def read_and_store_all():
         else:
             temperature = round(convert_celsius_to_fahrenheit(sensor.read_temperature()) + BMP085_CORRECTION)
             pressure = round(sensor.read_pressure())
-            logger.debug("temperature: {}°F  pressure: {}Pa".format(name, temperature, pressure))
+            logger.debug("temperature: {}°F  pressure: {}Pa".format(temperature, pressure))
 
         send_to_emoncms(name, temperature, pressure)
         write_to_rrd(name, temperature, pressure)
