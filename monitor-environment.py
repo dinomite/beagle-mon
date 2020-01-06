@@ -68,14 +68,14 @@ def read_and_store_all():
             try:
                 temperature = round(sensor.get_temperature(W1ThermSensor.DEGREES_F))
                 pressure = None
-                logger.info("{} ({}) temperature: {}°F".format(name, sensor.id, temperature))
+                logger.debug("{} ({}) temperature: {}°F".format(name, sensor.id, temperature))
             except SensorNotReadyError as e:
                 logger.warn("Sensor " + name + " not ready to read", e)
                 continue
         else:
             temperature = round(convert_celsius_to_fahrenheit(sensor.read_temperature()) + BMP085_CORRECTION)
             pressure = round(sensor.read_pressure() / 100)
-            logger.info("{} (BMP085) temperature: {}°F  pressure: {}hPa".format(name, temperature, pressure))
+            logger.debug("{} (BMP085) temperature: {}°F  pressure: {}hPa".format(name, temperature, pressure))
 
         send_to_emoncms(name, temperature, pressure)
         write_to_rrd(name, temperature, pressure)
@@ -85,12 +85,17 @@ logger.debug("Acquiring sensors")
 sensors = {
     'desk': BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES),
     'outside': get_1w_sensor("000005aba36c"),
-    'vent': get_1w_sensor("000005ab8e9c")
+    'vent': get_1w_sensor("000005ab8e9c"),
+    'tmp': get_1w_sensor("0416561e29ff"),
+    'foo': get_1w_sensor("0416561dedff")
 }
 logger.debug("Sensor handles created")
 
 
 logger.info("Beginning monitoring")
 while 1:
+    start = time.time()
     read_and_store_all()
-    time.sleep(60)
+    end = time.time()
+    logger.info("Iteration took {} seconds".format(end - start))
+    time.sleep(55)
