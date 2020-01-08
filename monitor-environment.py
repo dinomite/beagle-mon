@@ -20,8 +20,6 @@ EMONCMS_HOST = "emon.dinomite.net"
 EMONCMS_PORT = 443
 EMONCMS_PATH = "/input/post?node=environment&apikey=" + os.environ['EMONCMS_API_KEY']
 
-BMP085_CORRECTION = -12.5
-
 
 def get_1w_sensor(sensor_id):
     try:
@@ -61,19 +59,19 @@ def send_to_emoncms(name, temperature, pressure=None):
 
 
 def read_and_store_all():
-    for name, sensor in sensors.items():
+    for name, (sensor, correction) in sensors.items():
         logger.debug("Sensor name: " + name)
 
         if type(sensor) is W1ThermSensor:
             try:
-                temperature = round(sensor.get_temperature(W1ThermSensor.DEGREES_F))
+                temperature = round(correction(sensor.get_temperature(W1ThermSensor.DEGREES_F)))
                 pressure = None
                 logger.debug("{} ({}) temperature: {}°F".format(name, sensor.id, temperature))
             except SensorNotReadyError as e:
                 logger.warn("Sensor " + name + " not ready to read", e)
                 continue
         else:
-            temperature = round(convert_celsius_to_fahrenheit(sensor.read_temperature()) + BMP085_CORRECTION)
+            temperature = round(correction(convert_celsius_to_fahrenheit(sensor.read_temperature())))
             pressure = round(sensor.read_pressure() / 100)
             logger.debug("{} (BMP085) temperature: {}°F  pressure: {}hPa".format(name, temperature, pressure))
 
@@ -83,11 +81,11 @@ def read_and_store_all():
 
 logger.debug("Acquiring sensors")
 sensors = {
-    'desk': BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES),
-    'outside': get_1w_sensor("000005aba36c"),
-    'vent': get_1w_sensor("000005ab8e9c"),
-    'tmp': get_1w_sensor("0416561e29ff"),
-    'foo': get_1w_sensor("0416561dedff")
+    'desk': (BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES), lambda x: x - 10 ),
+    'outside': (get_1w_sensor("000005aba36c"), lambda x: x + 3),
+    'vent': (get_1w_sensor("000005ab8e9c"), lambda x: x + 1),
+    'tmp': (get_1w_sensor("0416561e29ff"), lambda x: x - 3),
+    'foo': (get_1w_sensor("0416561dedff"), lambda x: x - 3)
 }
 logger.debug("Sensor handles created")
 
