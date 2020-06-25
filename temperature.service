@@ -1,0 +1,13 @@
+[Unit]
+Description=Temperature service
+
+[Service]
+Environment="EMONCMS_API_KEY=XXXX_SET_THIS_XXXX"
+#Environment="LOG_LEVEL=DEBUG"
+ExecStart=/home/dinomite/bin/monitor-environment.py
+Restart=always
+RestartSec=10
+StartLimitInterval=4
+
+[Install]
+WantedBy=multi-user.target
