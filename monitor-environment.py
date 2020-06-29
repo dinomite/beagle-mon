@@ -26,7 +26,7 @@ def get_1w_sensor(sensor_id):
         return W1ThermSensor(W1ThermSensor.THERM_SENSOR_DS18B20, sensor_id)
     except NoSensorFoundError as e:
         logger.error("Sensor " + sensor_id + " not found", e)
-        exit(1)
+        pass
 
 
 def convert_celsius_to_fahrenheit(celsius):
@@ -83,9 +83,7 @@ logger.debug("Acquiring sensors")
 sensors = {
     'desk': (BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES), lambda x: x - 10 ),
     'outside': (get_1w_sensor("000005aba36c"), lambda x: x + 3),
-    'vent': (get_1w_sensor("000005ab8e9c"), lambda x: x + 1),
-    'tmp': (get_1w_sensor("0416561e29ff"), lambda x: x - 3),
-    'foo': (get_1w_sensor("0416561dedff"), lambda x: x - 3)
+    'vent': (get_1w_sensor("000005ab8e9c"), lambda x: x + 1)
 }
 logger.debug("Sensor handles created")
 
