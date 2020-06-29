@@ -83,7 +83,8 @@ logger.debug("Acquiring sensors")
 sensors = {
     'desk': (BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES), lambda x: x - 10 ),
     'outside': (get_1w_sensor("000005aba36c"), lambda x: x + 3),
-    'vent': (get_1w_sensor("000005ab8e9c"), lambda x: x + 1)
+    'vent': (get_1w_sensor("000005ab8e9c"), lambda x: x + 1),
+    'basement_hvac_input': (get_1w_sensor("0416565308ff"), lambda x: x)
 }
 logger.debug("Sensor handles created")
 
