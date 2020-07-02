@@ -46,5 +46,6 @@ def create_rrd(filename, data_source):
 #                     "RRA:MAX:0.5:1440:365")
 #create_rrd('outside', "DS:temperature:GAUGE:60:-25:125")
 #create_rrd('vent', "DS:temperature:GAUGE:60:35:120")
-create_rrd('basement_hvac_input', "DS:temperature:GAUGE:60:35:120")
+#create_rrd('basement_hvac_input', "DS:temperature:GAUGE:60:35:120")
+create_rrd('basement_hvac_output', "DS:temperature:GAUGE:60:35:120")
 exit(0)
